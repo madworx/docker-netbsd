@@ -1,0 +1,14 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+   - if [[ "${TRAVIS_BRANCH}" == "master" ]] ; then
+       echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
+     fi
+     
+script:
+   - make
+   - make push
+   
