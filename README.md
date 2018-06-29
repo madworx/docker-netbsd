@@ -1,4 +1,3 @@
-
 # QEMU-based NetBSD docker images
 
 Run NetBSD  in a  docker container (Emulated/virtualized  x86_64 using
