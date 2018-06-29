@@ -1,5 +1,4 @@
-#VERSIONS = 7.1.2 7.0 6.1.5 6.1 6.0.6 6.0
-VERSIONS = 7.1.2
+VERSIONS = 7.1.2 7.0 6.1.5 6.1 6.0.6 6.0
 SHELL := /bin/bash
 QEMU_VERSION := v2.11.1
 
