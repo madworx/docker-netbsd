@@ -16,10 +16,8 @@ build-qemu:
 	docker tag madworx/qemu:$(QEMU_VERSION) madworx/qemu:latest
 
 build:
-	for v in $(VERSIONS) ; do \
-		docker build --build-arg=NETBSD_VERSION=$$v \
-		  -t `echo "madworx/netbsd:$$v-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
-	done
+	docker build --build-arg=NETBSD_VERSION=$$VERSION \
+	  -t `echo "madworx/netbsd:$$VERSION-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
 
 run:
 	echo "Starting NetBSD container(s)..."

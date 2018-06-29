@@ -7,9 +7,11 @@ before_install:
    - if [[ "${TRAVIS_BRANCH}" == "master" ]] ; then
        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
      fi
-     
-script:
-   - make
-   - make push
-   
-# trigger travis
+
+jobs:
+   include:
+      - stage: NetBSD 7.0
+        script: make build VERSION=7.0
+      - stage: NetBSD 7.1
+        script: make build VERSION=7.1
+        
