@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -eE
+set -o pipefail
+
+#
+# Local system (qemu host) setup:
+#
+echo -e "Host localhost\n  ConnectTimeout=5\n" >> /etc/ssh/ssh_config
+
+#
+# At this point NetBSD will have  generated host SSH keys, which we'll
+# import into our local (Linux-side) known_hosts file.
+#
+sed 's#^#localhost,127.0.0.1 #' /bsd/etc/ssh/ssh*.pub > /root/.ssh/known_hosts
+
+#
+# NetBSD setup:
+#
+cd /bsd
+
+echo 'PermitRootLogin yes' >> etc/ssh/sshd_config
+echo '/usr/sbin/sshd' >> etc/rc.local
+cat >> etc/rc.local <<EOF
+. /etc/startup.vars
+if [ "\${USER_ID}" ] ; then
+  /usr/sbin/useradd -d "/home/\${USER_NAME}" \
+                    -u "\${USER_ID}" \
+                    -G wheel \
+                    -s /usr/pkg/bin/bash \
+                    "\${USER_NAME}"
+fi
+EOF
+
+echo "Configuring rc.conf..."
+sed -e 's#rc_configured=NO#rc_configured=YES#' -i etc/rc.conf
+cat >> etc/rc.conf <<EOF
+hostname=netbsd
+nfs_client=YES
+auto_ifconfig=NO
+net_interfaces=""
+EOF
+
+echo "Setting power button action..."
+cat > etc/powerd/scripts/power_button <<EOF
+#!/bin/sh
+
+/sbin/halt -lpq
+
+exit 0
+EOF
+
+mkdir root/.ssh
+echo "$(cat /root/.ssh/id_rsa.pub)" >> root/.ssh/authorized_keys

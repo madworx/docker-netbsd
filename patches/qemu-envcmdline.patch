@@ -1,0 +1,30 @@
+--- qemu-2.12.0-rc2.orig/vl.c	2018-04-04 22:28:50.000000000 +0200
++++ qemu-2.12.0-rc2/vl.c	2018-04-26 13:57:35.538524521 +0200
+@@ -3060,6 +3060,27 @@
+     QSIMPLEQ_HEAD(, BlockdevOptions_queue) bdo_queue
+         = QSIMPLEQ_HEAD_INITIALIZER(bdo_queue);
+ 
++    char *env_cmdline = getenv( "QEMU_CMDLINE" );
++    if ( env_cmdline != NULL ) {
++       const char seps[]   = " \t\n";
++       char *token;
++       char **tokens = calloc(1, sizeof(char *));
++       int n_args = 0;
++       token = strtok(env_cmdline, seps);
++       while( token != NULL ) {
++          tokens = realloc(tokens, sizeof(char *)*(n_args+1));
++          tokens[n_args++] = token;
++          token = strtok(NULL, seps);
++       }
++       char **old_argv = argv;
++       int old_argc = argc;
++
++       argv = calloc(old_argc+n_args+1, sizeof(char *));
++       memcpy(argv, old_argv, sizeof(char *)*old_argc);
++       memcpy(argv+argc, tokens, sizeof(char *)*n_args);
++       argc = old_argc + n_args;
++    }
++
+     module_call_init(MODULE_INIT_TRACE);
+ 
+     qemu_init_cpu_list();

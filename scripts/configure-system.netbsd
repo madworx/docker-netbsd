@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -x
+
+echo "Reading environment variables..."
+. /etc/startup.vars
+
+set
+
+echo "Creating device nodes..."
+cd /dev && ./MAKEDEV all
+
+echo "Generating SSH host keys..."
+/usr/bin/ssh-keygen -A
+
+echo "Downloading extra packages..."
+pkg_add $NETBSD_PKGSRC_PACKAGES
+
+echo "Setting up local pxeboot..."
+cp /usr/mdec/pxeboot_ia32.bin /pxeboot_ia32_com0.bin
+/usr/sbin/installboot -e -o console=com0,speed=0,timeout=0 /pxeboot_ia32_com0.bin
+
+echo "Shutting down..."
+poweroff
+

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -eE
+set -o pipefail
+
+#
+# Local system (qemu host) setup:
+#
+echo -e "/bsd    0.0.0.0/0.0.0.0(rw,no_root_squash,insecure)\n" > /etc/exports
+
+#
+# NetBSD setup:
+#
+cd /bsd
+
+echo ". /etc/startup.vars" >> etc/profile
+
+echo "192.168.76.2" > etc/mygate
+echo "netbsd"       > etc/myname
+
+mkdir -p kern proc dev/pts
+
+cat > etc/fstab <<EOF
+192.168.76.2:/bsd  /        nfs    rw          0  0
+/kern              /kern    kernfs rw          0  0
+/proc              /proc    procfs rw          0  0
+fdesc              /dev     fdesc  ro,-o=union 0  0
+ptyfs              /dev/pts ptyfs  rw          0  0
+EOF
+
+gzip -c netbsd > netbsd.gz

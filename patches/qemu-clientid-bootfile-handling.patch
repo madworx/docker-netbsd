@@ -1,0 +1,66 @@
+diff --git a/slirp/bootp.c b/slirp/bootp.c
+index 5dd1a41..d0106f7 100644
+--- a/slirp/bootp.c
++++ b/slirp/bootp.c
+@@ -99,7 +99,7 @@ static BOOTPClient *find_addr(Slirp *slirp, struct in_addr *paddr,
+ }
+ 
+ static void dhcp_decode(const struct bootp_t *bp, int *pmsg_type,
+-                        struct in_addr *preq_addr)
++                        struct in_addr *preq_addr, char *classid)
+ {
+     const uint8_t *p, *p_end;
+     int len, tag;
+@@ -138,6 +138,9 @@ static void dhcp_decode(const struct bootp_t *bp, int *pmsg_type,
+                     memcpy(&(preq_addr->s_addr), p, 4);
+                 }
+                 break;
++            case RFC2132_CLASS_ID:
++                snprintf(classid, 128, "%.*s", len, p);
++                break;
+             default:
+                 break;
+             }
+@@ -160,9 +163,10 @@ static void bootp_reply(Slirp *slirp, const struct bootp_t *bp)
+     int dhcp_msg_type, val;
+     uint8_t *q;
+     uint8_t client_ethaddr[ETH_ALEN];
++    char client_classid[128];
+ 
+     /* extract exact DHCP msg type */
+-    dhcp_decode(bp, &dhcp_msg_type, &preq_addr);
++    dhcp_decode(bp, &dhcp_msg_type, &preq_addr, (char*)&client_classid);
+     DPRINTF("bootp packet op=%d msgtype=%d", bp->bp_op, dhcp_msg_type);
+     if (preq_addr.s_addr != htonl(0L))
+         DPRINTF(" req_addr=%08" PRIx32 "\n", ntohl(preq_addr.s_addr));
+@@ -258,9 +262,15 @@ static void bootp_reply(Slirp *slirp, const struct bootp_t *bp)
+             *q++ = DHCPACK;
+         }
+ 
+-        if (slirp->bootp_filename)
+-            snprintf((char *)rbp->bp_file, sizeof(rbp->bp_file), "%s",
+-                     slirp->bootp_filename);
++        if (slirp->bootp_filename) {
++            if (!strcmp("NetBSD:i386:libsa", client_classid)) {
++                snprintf((char *)rbp->bp_file, sizeof(rbp->bp_file), "%s",
++                         "tftp://netbsd.gz" );
++            } else {
++                snprintf((char *)rbp->bp_file, sizeof(rbp->bp_file), "%s",
++                         slirp->bootp_filename);
++            }
++        }
+ 
+         *q++ = RFC2132_SRV_ID;
+         *q++ = 4;
+diff --git a/slirp/bootp.h b/slirp/bootp.h
+index 3945257..8f4d6ed 100644
+--- a/slirp/bootp.h
++++ b/slirp/bootp.h
+@@ -70,6 +70,7 @@
+ #define RFC2132_MAX_SIZE	57
+ #define RFC2132_RENEWAL_TIME    58
+ #define RFC2132_REBIND_TIME     59
++#define RFC2132_CLASS_ID        60
+ 
+ #define DHCPDISCOVER		1
+ #define DHCPOFFER		2
