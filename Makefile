@@ -13,13 +13,13 @@ all:	build
 
 build-qemu:
 	docker build --build-arg=QEMU_RELEASE=$(QEMU_VERSION) --force-rm \
-		-f Dockerfile.qemu -t tools.ratemeup.se/mad/qemu:$(QEMU_VERSION) .
-	docker tag tools.ratemeup.se/mad/qemu:$(QEMU_VERSION) tools.ratemeup.se/mad/qemu:latest
+		-f Dockerfile.qemu -t madworx/qemu:$(QEMU_VERSION) .
+	docker tag madworx/qemu:$(QEMU_VERSION) madworx/qemu:latest
 
 build:	build-qemu
 	for v in $(VERSIONS) ; do \
 		docker build --build-arg=NETBSD_VERSION=$$v \
-		  -t `echo "tools.ratemeup.se/mad/netbsd:$$v-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
+		  -t `echo "madworx/netbsd:$$v-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
 	done
 
 run:
@@ -38,12 +38,12 @@ run:
 			--privileged \
 			--hostname qemu-netbsd-$$v-`uname -m` \
 			--name netbsd-$$v \
-			tools.ratemeup.se/mad/netbsd:$$v-`uname -m` ; \
+			madworx/netbsd:$$v-`uname -m` ; \
 	done
 
 push:
 	for v in $(VERSIONS) ; do \
-		docker push tools.ratemeup.se/mad/netbsd:$$v-`uname -m` ; \
+		docker push madworx/netbsd:$$v-`uname -m` ; \
 	done
 
 shell:

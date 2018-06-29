@@ -1,4 +1,4 @@
-FROM tools.ratemeup.se/mad/qemu:v2.11.1
+FROM madworx/qemu:v2.11.1
 
 MAINTAINER Martin Kjellstrand [https://github.com/madworx]
 
