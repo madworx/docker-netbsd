@@ -14,25 +14,19 @@ jobs:
    include:
       - stage: Build images
         env: VERSION=6.0
-        script: make build VERSION=6.0
-        script: make push VERSION=6.0
+        script: make build VERSION=6.0 && make push VERSION=6.0
       -
         env: VERSION=6.0.6
-        script: make build VERSION=6.0.6
-        script: make push VERSION=6.0.6
+        script: make build VERSION=6.0.6 && make push VERSION=6.0.6
       -
         env: VERSION=6.1
-        script: make build VERSION=6.1
-        script: make push VERSION=6.1
+        script: make build VERSION=6.1 && make push VERSION=6.1
       -
         env: VERSION=6.1.5
-        script: make build VERSION=6.1.5
-        script: make push VERSION=6.1.5
+        script: make build VERSION=6.1.5 && make push VERSION=6.1.5
       -
         env: VERSION=7.0
-        script: make build VERSION=7.0
-        script: make push VERSION=7.0
+        script: make build VERSION=7.0 && make push VERSION=7.0
       -
         env: VERSION=7.1.2
-        script: make build VERSION=7.1.2
-        script: make push VERSION=7.1.2
+        script: make build VERSION=7.1.2 && make push VERSION=7.1.2
