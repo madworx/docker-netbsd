@@ -13,20 +13,20 @@ before_install:
 jobs:
    include:
       - stage: Build images
-        env: VERSION=6.0
-        script: make build VERSION=6.0 && make push VERSION=6.0
+        env: NETBSD_VERSION=6.0
+        script: make build && make push
       -
-        env: VERSION=6.0.6
-        script: make build VERSION=6.0.6 && make push VERSION=6.0.6
+        env: NETBSD_VERSION=6.0.6
+        script: make build && make push
       -
-        env: VERSION=6.1
-        script: make build VERSION=6.1 && make push VERSION=6.1
+        env: NETBSD_VERSION=6.1
+        script: make build && make push
       -
-        env: VERSION=6.1.5
-        script: make build VERSION=6.1.5 && make push VERSION=6.1.5
+        env: NETBSD_VERSION=6.1.5
+        script: make build && make push
       -
-        env: VERSION=7.0
-        script: make build VERSION=7.0 && make push VERSION=7.0
+        env: NETBSD_VERSION=7.0
+        script: make build && make push
       -
-        env: VERSION=7.1.2
-        script: make build VERSION=7.1.2 && make push VERSION=7.1.2
+        env: NETBSD_VERSION=7.1.2
+        script: make build && make push 
