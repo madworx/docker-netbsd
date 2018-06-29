@@ -13,12 +13,20 @@ before_install:
 jobs:
    include:
       - stage: Build images
-        script: make build VERSION=7.0
+        script: make build VERSION=6.0
+        script: make push VERSION=6.0
       -
-        script: make build VERSION=7.1
-      - stage: Push images
+        script: make build VERSION=6.0.6
+        script: make push VERSION=6.0.6
+      -
+        script: make build VERSION=6.1
+        script: make push VERSION=6.1
+      -
+        script: make build VERSION=6.1.5
+        script: make push VERSION=6.1.5
+      -
+        script: make build VERSION=7.0
         script: make push VERSION=7.0
       -
-        script: make push VERSION=7.1
-      
-        
+        script: make build VERSION=7.1.2
+        script: make push VERSION=7.1.2
