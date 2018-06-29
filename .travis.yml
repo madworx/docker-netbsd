@@ -1,5 +1,7 @@
 sudo: required
 
+language: c
+
 services:
   - docker
 
@@ -7,9 +9,24 @@ before_install:
    - if [[ "${TRAVIS_BRANCH}" == "master" ]] ; then
        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
      fi
-     
-script:
-   - make
-   - make push
-   
-# trigger travis
+
+jobs:
+   include:
+      - stage: Build images
+        env: NETBSD_VERSION=6.0
+        script: make build && make push
+      -
+        env: NETBSD_VERSION=6.0.6
+        script: make build && make push
+      -
+        env: NETBSD_VERSION=6.1
+        script: make build && make push
+      -
+        env: NETBSD_VERSION=6.1.5
+        script: make build && make push
+      -
+        env: NETBSD_VERSION=7.0
+        script: make build && make push
+      -
+        env: NETBSD_VERSION=7.1.2
+        script: make build && make push 

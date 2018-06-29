@@ -1,4 +1,4 @@
-VERSIONS = 7.1.2 7.0 6.1.5 6.1 6.0.6 6.0
+NETBSD_VERSION := ${NETBSD_VERSION}
 SHELL := /bin/bash
 QEMU_VERSION := v2.11.1
 
@@ -16,10 +16,8 @@ build-qemu:
 	docker tag madworx/qemu:$(QEMU_VERSION) madworx/qemu:latest
 
 build:
-	for v in $(VERSIONS) ; do \
-		docker build --build-arg=NETBSD_VERSION=$$v \
-		  -t `echo "madworx/netbsd:$$v-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
-	done
+	docker build --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
+	  -t `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
 
 run:
 	echo "Starting NetBSD container(s)..."
@@ -45,9 +43,7 @@ push-qemu:
 	docker push madworx/qemu:$(QEMU_VERSION)
 
 push:
-	for v in $(VERSIONS) ; do \
-		docker push madworx/netbsd:$$v-`uname -m` ; \
-	done
+	docker push madworx/netbsd:$(NETBSD_VERSION)-`uname -m`
 
 shell:
 	docker exec -it netbsd-7.1.2 /usr/bin/bsd /bin/sh
