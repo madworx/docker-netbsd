@@ -1,4 +1,5 @@
-VERSIONS = 7.1.2 7.0 6.1.5 6.1 6.0.6 6.0
+#VERSIONS = 7.1.2 7.0 6.1.5 6.1 6.0.6 6.0
+VERSIONS = 7.1.2
 SHELL := /bin/bash
 QEMU_VERSION := v2.11.1
 
@@ -41,6 +42,8 @@ run:
 	done
 
 push:
+	docker push madworx/qemu:latest
+	docker push madworx/qemu:$(QEMU_VERSION)
 	for v in $(VERSIONS) ; do \
 		docker push madworx/netbsd:$$v-`uname -m` ; \
 	done
