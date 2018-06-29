@@ -43,9 +43,7 @@ push-qemu:
 	docker push madworx/qemu:$(QEMU_VERSION)
 
 push:
-	for v in $(VERSIONS) ; do \
-		docker push madworx/netbsd:$$v-`uname -m` ; \
-	done
+	docker push madworx/netbsd:$$VERSION-`uname -m`
 
 shell:
 	docker exec -it netbsd-7.1.2 /usr/bin/bsd /bin/sh

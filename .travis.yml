@@ -1,5 +1,7 @@
 sudo: required
 
+language: c
+
 services:
   - docker
 
@@ -10,8 +12,11 @@ before_install:
 
 jobs:
    include:
-      - stage: NetBSD 7.0
+      - stage: Build images
         script: make build VERSION=7.0
-      - stage: NetBSD 7.1
         script: make build VERSION=7.1
+      - stage: Push images
+        script: make push VERSION=7.0
+        script: make push VERSION=7.1
+      
         
