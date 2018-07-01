@@ -10,11 +10,6 @@ NETBSD_SETS := "base etc man misc modules text kern-GENERIC"
 
 all:	build
 
-build-qemu:
-	docker build --build-arg=QEMU_RELEASE=$(QEMU_VERSION) --force-rm \
-		-f Dockerfile.qemu -t madworx/qemu:$(QEMU_VERSION) .
-	docker tag madworx/qemu:$(QEMU_VERSION) madworx/qemu:latest
-
 build:
 	docker build --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
 	  -t `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
@@ -37,10 +32,6 @@ run:
 			--name netbsd-$$v \
 			madworx/netbsd:$$v-`uname -m` ; \
 	done
-
-push-qemu:
-	docker push madworx/qemu:latest
-	docker push madworx/qemu:$(QEMU_VERSION)
 
 push:
 	docker push madworx/netbsd:$(NETBSD_VERSION)-`uname -m`
