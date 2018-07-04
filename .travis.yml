@@ -29,4 +29,7 @@ jobs:
         script: make build && make push
       -
         env: NETBSD_VERSION=7.1.2
-        script: make build && make push 
+        script: make build && make push
+      -
+        env: NETBSD_VERSION=8.0_RC2
+        script: make build && make push
