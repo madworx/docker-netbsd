@@ -62,8 +62,6 @@ COPY bsd.sh /usr/bin/bsd
 #
 RUN /scripts/system-setup.pre.netbsd
 
-# COPY --from madworx/qemu /tmp/qemu.apk /tmp/ 
-  
 #
 # Make one run of /docker-entrypoint.sh, to allow the NetBSD system to
 # configure itself:

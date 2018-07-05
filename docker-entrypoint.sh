@@ -25,21 +25,42 @@ done
 cp /etc/resolv.conf /bsd/etc/resolv.conf
 
 #
+# If we have SSH_PUBKEY set, add that key to authorized_keys.
+#
+[ -z "${SSH_PUBKEY}" ] || add-ssh-key "${SSH_PUBKEY}"
+
+
+#
+# Start userspace NFS server on Linux end.
+#
+rpcbind -h 127.0.0.1
+unfsd   -l 127.0.0.1
+
+# Parse command line arguments:
+QUIET=0
+if [ ! -z "$*" ] ; then
+    while [ "$#" -gt 0 ] ; do
+        case "$1" in
+            -q) QUIET=$(($QUIET+1)) ; shift ;;
+            -*) echo "Unknown option \`$1'." ; exit 1 ;;
+            *) QUIET=$(($QUIET+1)) ; break ;;
+        esac
+    done
+fi
+
+#
 # If we have KVM available, enable it:
 #
 if dd if=/dev/kvm count=0 >/dev/null 2>&1 ; then
     echo "KVM Hardware acceleration will be used."
     ENABLE_KVM="-enable-kvm"
 else
-    echo "Warning: Lacking KVM support - slower(!) emulation will be used."
-    sleep 1
+    if [ "${QUIET}" -lt 2 ] ; then
+        echo "Warning: Lacking KVM support - slower(!) emulation will be used." 1>&2
+        sleep 1
+    fi
     ENABLE_KVM=""
 fi
-
-#
-# If we have SSH_PUBKEY set, add that key to authorized_keys.
-#
-[ -z "${SSH_PUBKEY}" ] || add-ssh-key "${SSH_PUBKEY}"
 
 
 #
@@ -53,12 +74,6 @@ trap "{ echo \"Shutting down gracefully...\" 1>&2 ; \
         exit 0 ; }" TERM
 
 #
-# Start userspace NFS server on Linux end.
-#
-rpcbind -h 127.0.0.1
-unfsd   -l 127.0.0.1
-
-#
 # Boot up NetBSD by starting QEMU.
 #
 (
@@ -69,7 +84,15 @@ unfsd   -l 127.0.0.1
                    -serial mon:stdio \
                    -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::${SSH_PORT}-:22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device e1000,netdev=mynet0 \
                    -m ${SYSTEM_MEMORY} -smp ${SYSTEM_CPUS}"
-    exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64
+    case "${QUIET}" in
+        0) exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64 ;;
+        *) exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64 >/dev/null 2>&1 ;;
+    esac
 ) &
+
+if [ ! -z "$*" ] ; then
+    /usr/bin/bsd $*
+    exit $?
+fi
 
 wait
