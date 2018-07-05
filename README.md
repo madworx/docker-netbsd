@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/madworx/docker-netbsd.svg?branch=master)](https://travis-ci.org/madworx/docker-netbsd)
+
 # QEMU-based NetBSD docker images
 
 Run NetBSD  in a  docker container (Emulated/virtualized  x86_64 using
