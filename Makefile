@@ -34,7 +34,7 @@ run:
 	done
 
 push:
-	docker push madworx/netbsd:$(NETBSD_VERSION)-`uname -m`
+	docker push `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'`
 
 shell:
 	docker exec -it netbsd-7.1.2 /usr/bin/bsd /bin/sh
