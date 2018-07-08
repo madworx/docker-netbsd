@@ -20,7 +20,4 @@ before_install:
        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
      fi
 
-jobs:
-   include:
-      - stage: Build images
-        script: make build && make push
+script: make build && make push
