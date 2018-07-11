@@ -72,11 +72,13 @@ RUN cd /build/qemu \
 
 USER root
 RUN cd /build/qemu \
-    && make -j$(nproc)
+    && make -j$(nproc) \
+    && make qemu-img
 
 USER root
 RUN cd /build/qemu \
-    && DESTDIR=/tmp/qemu make install
+    && DESTDIR=/tmp/qemu make install \
+    && cp qemu-img /tmp/qemu/usr/bin/
 
 # Let's trim up the toupé!
 RUN find /tmp/qemu/usr/share/qemu/ -type f -maxdepth 1 \
@@ -86,7 +88,6 @@ RUN find /tmp/qemu/usr/share/qemu/ -type f -maxdepth 1 \
     | egrep -v '/en-gb$' | xargs -r rm 
 
 # Preferrably we would have built an Alpine 'apk' package here instead.
-  
 FROM alpine:3.7
 
 ARG QEMU_RUNTIME_PKGS="busybox-extras libpng pixman libseccomp  openssh \
