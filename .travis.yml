@@ -1,5 +1,15 @@
 sudo: required
 
+env:
+  matrix:
+    - NETBSD_VERSION=6.0
+    - NETBSD_VERSION=6.0.6
+    - NETBSD_VERSION=6.1
+    - NETBSD_VERSION=6.1.5
+    - NETBSD_VERSION=7.0
+    - NETBSD_VERSION=7.1.2
+    - NETBSD_VERSION=8.0_RC2
+
 language: c
 
 services:
@@ -10,26 +20,4 @@ before_install:
        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
      fi
 
-jobs:
-   include:
-      - stage: Build images
-        env: NETBSD_VERSION=6.0
-        script: make build && make push
-      -
-        env: NETBSD_VERSION=6.0.6
-        script: make build && make push
-      -
-        env: NETBSD_VERSION=6.1
-        script: make build && make push
-      -
-        env: NETBSD_VERSION=6.1.5
-        script: make build && make push
-      -
-        env: NETBSD_VERSION=7.0
-        script: make build && make push
-      -
-        env: NETBSD_VERSION=7.1.2
-        script: make build && make push
-      -
-        env: NETBSD_VERSION=8.0_RC2
-        script: make build && make push
+script: make build && make push
