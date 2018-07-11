@@ -1,4 +1,4 @@
-FROM madworx/qemu:v2.11.1
+FROM madworx/qemu:latest
 
 MAINTAINER Martin Kjellstrand [https://github.com/madworx]
 
