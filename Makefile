@@ -1,6 +1,5 @@
 NETBSD_VERSION := ${NETBSD_VERSION}
 SHELL := /bin/bash
-QEMU_VERSION := v2.11.1
 
 NETBSD_SETS := "base etc man misc modules text kern-GENERIC"
 
@@ -11,7 +10,7 @@ NETBSD_SETS := "base etc man misc modules text kern-GENERIC"
 all:	build
 
 build:
-	docker build --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
+	docker build --no-cache --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
 	  -t `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
 
 run:

@@ -8,7 +8,7 @@ env:
     - NETBSD_VERSION=6.1.5
     - NETBSD_VERSION=7.0
     - NETBSD_VERSION=7.1.2
-    - NETBSD_VERSION=8.0_RC2
+    - NETBSD_VERSION=8.0
 
 language: c
 
@@ -21,3 +21,4 @@ before_install:
      fi
 
 script: make build && make push
+
