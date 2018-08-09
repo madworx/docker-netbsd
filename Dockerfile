@@ -5,7 +5,7 @@ MAINTAINER Martin Kjellstrand [https://github.com/madworx]
 ENV SYSTEM_MEMORY=512M
 ENV SYSTEM_CPUS=1
 
-ARG NETBSD_MIRROR=http://ftp.fi.netbsd.org/pub
+ARG NETBSD_MIRROR=http://ftp.fi.netbsd.org/pub/NetBSD
 ARG NETBSD_VERSION=7.1
 ARG NETBSD_ARCH=amd64
 
@@ -31,8 +31,9 @@ RUN apk add --no-cache curl unfs3
 # Download sets:
 #
 RUN cd /tmp \
+    && echo "Downloading from ${NETBSD_MIRROR}..." \
     && for set in ${NETBSD_SETS} ; do \
-        urls="${urls} -O ${NETBSD_MIRROR}/NetBSD/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.tgz" ; \
+        urls="${urls} -O ${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.tgz" ; \
        done \
     && curl ${urls}
 
