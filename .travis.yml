@@ -1,5 +1,10 @@
 sudo: required
 
+langugage: perl
+
+services:
+  - docker
+
 env:
   matrix:
     - NETBSD_VERSION=6.0
@@ -8,16 +13,15 @@ env:
     - NETBSD_VERSION=6.1.5
     - NETBSD_VERSION=7.0
     - NETBSD_VERSION=7.1.2
-    - NETBSD_VERSION=8.0_RC2
-
-language: c
-
-services:
-  - docker
+    - NETBSD_VERSION=8.0
 
 before_install:
-   - if [[ "${TRAVIS_BRANCH}" == "master" ]] ; then
-       echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
-     fi
+  - source <(curl https://raw.githubusercontent.com/madworx/cd-ci-glue/master/src/cd-ci-glue.bash)
 
-script: make build && make push
+script:
+  - make build
+
+after_success:
+  - is_travis_master_push &&
+    dockerhub_push_image madworx/netbsd:${NETBSD_VERSION} &&
+    dockerhub_set_description madworx/netbsd README.md
