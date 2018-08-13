@@ -1,10 +1,20 @@
-#!/bin/sh
+#!/bin/ksh
 
 set -x
+set -e
+
+#
+# Since this  is being run as  /etc/rc.conf, we always want  to ensure
+# that we exit with a zero status  code. We'll use the file /all-ok to
+# indicate  to  the  installer  if  we  completed  the  setup  process
+# successfully.
+#
+trap 'poweroff' 0
 
 echo "Reading environment variables..."
 . /etc/startup.vars
 
+echo "Dumping all set environment variables:"
 set
 
 echo "Creating device nodes..."
@@ -20,6 +30,7 @@ echo "Setting up local pxeboot..."
 cp /usr/mdec/pxeboot_ia32.bin /pxeboot_ia32_com0.bin
 /usr/sbin/installboot -e -o console=com0,speed=0,timeout=0 /pxeboot_ia32_com0.bin
 
-echo "Shutting down..."
-poweroff
-
+#
+# Signal the installer that we've completed successfully:
+#
+touch /all-ok
