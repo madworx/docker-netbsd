@@ -1,7 +1,7 @@
 env:
   matrix:
     - NETBSD_VERSION=6.0
-    - NETBSD_VERSION=6.0.6
+    - NETBSD_VERSION=6.0.5
     - NETBSD_VERSION=6.1
     - NETBSD_VERSION=6.1.5
     - NETBSD_VERSION=7.0
