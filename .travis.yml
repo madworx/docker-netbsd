@@ -36,4 +36,4 @@ jobs:
 
 after_success:
   - is_travis_master_push &&
-    dockerhub_push_image madworx/netbsd:${NETBSD_VERSION}-x86_64 &&
+    dockerhub_push_image madworx/netbsd:${NETBSD_VERSION}-x86_64

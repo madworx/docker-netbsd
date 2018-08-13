@@ -35,7 +35,7 @@ RUN cd /tmp \
     && for set in ${NETBSD_SETS} ; do \
         urls="${urls} -O ${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.tgz" ; \
        done \
-    && curl ${urls}
+    && curl --retry-connrefused --retry 20 ${urls}
 
 #
 # Unpack (and remove) sets:
