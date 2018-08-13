@@ -43,7 +43,7 @@ RUN cd /tmp \
 RUN mkdir /bsd \
     && cd /bsd \
     && for set in ${NETBSD_SETS} ; do \
-           tar zxpf /tmp/${set}.tgz && \
+           tar zxpf /tmp/${set}.tgz || exit 1 ; \
            rm /tmp/${set}.tgz ; \
        done
 
