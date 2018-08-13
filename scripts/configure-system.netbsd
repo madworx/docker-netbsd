@@ -27,6 +27,7 @@ echo "Downloading extra packages..."
 pkg_add $NETBSD_PKGSRC_PACKAGES
 
 echo "Setting up local pxeboot..."
+rm -f /pxeboot_ia32_com0.bin || true
 cp /usr/mdec/pxeboot_ia32.bin /pxeboot_ia32_com0.bin
 /usr/sbin/installboot -e -o console=com0,speed=0,timeout=0 /pxeboot_ia32_com0.bin
 
