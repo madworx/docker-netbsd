@@ -1,7 +1,7 @@
 env:
   matrix:
     - NETBSD_VERSION=6.0
-    - NETBSD_VERSION=6.0.6
+    - NETBSD_VERSION=6.0.5
     - NETBSD_VERSION=6.1
     - NETBSD_VERSION=6.1.5
     - NETBSD_VERSION=7.0
@@ -32,7 +32,7 @@ jobs:
       env: NETBSD_VERSION
       script:
         - is_travis_master_push &&
-          dockerhub_set_description madworx/netbsd README.md
+          dockerhub_set_description madworx/netbsd README.md || true
 
 after_success:
   - is_travis_master_push &&
