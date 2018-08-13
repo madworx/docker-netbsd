@@ -10,7 +10,7 @@ env:
 
 sudo: required
 
-langugage: perl
+language: perl
 
 perl:
   - "5.22"
@@ -25,11 +25,12 @@ script:
   - make build
 
 jobs:
-  - stage: Update DockerHub description
-    env: NETBSD_VERSION
-    script:
-      - is_travis_master_push &&
-        dockerhub_set_description madworx/netbsd README.md
+  include:
+    - stage: Update DockerHub description
+      env: NETBSD_VERSION
+      script:
+        - is_travis_master_push &&
+          dockerhub_set_description madworx/netbsd README.md
 
 after_success:
   - is_travis_master_push &&
