@@ -31,10 +31,12 @@ RUN apk add --no-cache curl unfs3
 # Download sets:
 #
 RUN cd /tmp \
-    && echo "Downloading from ${NETBSD_MIRROR}..." \
+    && echo -n "Downloading from ${NETBSD_MIRROR}:" \
     && for set in ${NETBSD_SETS} ; do \
+        echo -n " ${set}" ; \
         urls="${urls} -O ${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.tgz" ; \
        done \
+    && echo "." ; \
     && curl --fail-early --retry-connrefused --retry 20 ${urls}
 
 #
