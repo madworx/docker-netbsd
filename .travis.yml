@@ -37,7 +37,7 @@ jobs:
   include:
     - stage: build
       script:
-        - make build && aws_ecr_push madworx/netbsd:${NETBSD_VERSION}-x86_64 netbsd/build-${TRAVIS_BUILD_NUMBER}
+        - make build 
     - stage: test
       script:
         - DOCKER_IMAGE=$(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) make tests
