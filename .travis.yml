@@ -18,7 +18,9 @@ perl:
   - "5.22"
 
 services:
-  - docker
+- docker
+
+install: true
 
 jobs:
   include:
