@@ -28,20 +28,15 @@ before_install:
 
 script: true
 
-stages:
-  - build
-  - test
-  - publish
-
 jobs:
   include:
-    - stage: build
+    - stage: test
       script:
-        - make build 
+        - make build && aws_ecr_push madworx/netbsd:${NETBSD_VERSION}-x86_64 netbsd/build-${TRAVIS_BUILD_NUMBER}
     - stage: test
       script:
         - DOCKER_IMAGE=$(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) make tests
-    - stage: publish
+    - stage: test
       script:
         - is_travis_master_push &&
           docker tag $(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) madworx/netbsd:${NETBSD_VERSION}-x86_64 &&
