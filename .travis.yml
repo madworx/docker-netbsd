@@ -34,3 +34,8 @@ jobs:
     - stage: publish
       script:
         - echo "Publishing ${NETBSD_VERSION}"
+
+deploy:
+  provider: script
+  script: echo "Deploying ${NETBSD_VERSION}"
+
