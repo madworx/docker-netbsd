@@ -26,25 +26,12 @@ before_install:
   - source <(curl https://raw.githubusercontent.com/madworx/cd-ci-glue/add-aws-ecr-functionality/src/cd-ci-glue.bash)
   - pip install --user awscli
 
-script: true
-
-stages:
-  - build
-  - test
-  - publish
+script:
+  - make build
+  - DOCKER_IMAGE=madworx/netbsd:${NETBSD_VERSION}-x86_64 make tests
 
 jobs:
   include:
-    - stage: build
-      script:
-        - make build && aws_ecr_push madworx/netbsd:${NETBSD_VERSION}-x86_64 netbsd/build-${TRAVIS_BUILD_NUMBER}
-    - stage: test
-      script:
-        - DOCKER_IMAGE=$(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) make tests
-    - stage: publish
-        - script: is_travis_master_push &&
-                  docker tag $(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) madworx/netbsd:${NETBSD_VERSION}-x86_64 &&
-                  dockerhub_push_image madworx/netbsd:${NETBSD_VERSION}-x86_64 || true
     - stage: Update DockerHub description
       env: NETBSD_VERSION
       script:
