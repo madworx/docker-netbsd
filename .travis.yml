@@ -1,12 +1,20 @@
 env:
   matrix:
-    - NETBSD_VERSION=6.0
-    - NETBSD_VERSION=6.0.5
-    - NETBSD_VERSION=6.1
-    - NETBSD_VERSION=6.1.5
-    - NETBSD_VERSION=7.0
-    - NETBSD_VERSION=7.1.2
-    - NETBSD_VERSION=8.0
+    include:
+      - name: "NetBSD 6.0"
+        env: NETBSD_VERSION=6.0
+      - name: "NetBSD 6.0.5"
+        env: NETBSD_VERSION=6.0.5
+      - name: "NetBSD 6.1"
+        env: NETBSD_VERSION=6.1
+      - name: "NetBSD 6.1.5"
+        env: NETBSD_VERSION=6.1.5
+      - name: "NetBSD 7.0"
+        env: NETBSD_VERSION=7.0
+      - name: "NetBSD 7.1.2"
+        env: NETBSD_VERSION=7.1.2
+      - name: "NetBSD 8.0"
+        env: NETBSD_VERSION=8.0
   global:
     - PATH=$HOME/.local/bin:$PATH
 
