@@ -7,6 +7,8 @@ env:
     - NETBSD_VERSION=7.0
     - NETBSD_VERSION=7.1.2
     - NETBSD_VERSION=8.0
+  global:
+    - PATH=$HOME/.local/bin:$PATH
 
 sudo: required
 
@@ -22,6 +24,7 @@ install: true
 
 before_install:
   - source <(curl https://raw.githubusercontent.com/madworx/cd-ci-glue/add-aws-ecr-functionality/src/cd-ci-glue.bash)
+  - pip install --user awscli
 
 script: true
 
