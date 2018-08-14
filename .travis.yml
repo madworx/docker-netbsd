@@ -21,6 +21,7 @@ services:
 - docker
 
 install: true
+script: true
 
 jobs:
   include:
