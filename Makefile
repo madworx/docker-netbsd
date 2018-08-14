@@ -9,6 +9,9 @@ NETBSD_SETS := "base etc man misc modules text kern-GENERIC"
 
 all:	build
 
+tests:
+	DOCKER_IMAGE="madworx/netbsd:$(NETBSD_VERSION)-x86_64" bats tests/*.bats
+
 build:
 	docker build --no-cache --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
 	  $$([[ "$${NETBSD_VERSION}" < "7" ]] && echo "--build-arg=NETBSD_MIRROR=http://ftp.netbsd.org/pub/NetBSD-archive") \
@@ -44,3 +47,5 @@ check:
 		let "port++" ; \
 		ssh localhost -p $${port} uname -a ; \
 	done
+
+.PHONY: tests
