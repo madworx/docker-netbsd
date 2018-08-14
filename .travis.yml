@@ -1,20 +1,12 @@
 env:
   matrix:
-    include:
-      - name: "NetBSD 6.0"
-        env: NETBSD_VERSION=6.0
-      - name: "NetBSD 6.0.5"
-        env: NETBSD_VERSION=6.0.5
-      - name: "NetBSD 6.1"
-        env: NETBSD_VERSION=6.1
-      - name: "NetBSD 6.1.5"
-        env: NETBSD_VERSION=6.1.5
-      - name: "NetBSD 7.0"
-        env: NETBSD_VERSION=7.0
-      - name: "NetBSD 7.1.2"
-        env: NETBSD_VERSION=7.1.2
-      - name: "NetBSD 8.0"
-        env: NETBSD_VERSION=8.0
+    - NETBSD_VERSION=6.0
+    - NETBSD_VERSION=6.0.5
+    - NETBSD_VERSION=6.1
+    - NETBSD_VERSION=6.1.5
+    - NETBSD_VERSION=7.0
+    - NETBSD_VERSION=7.1.2
+    - NETBSD_VERSION=8.0
   global:
     - PATH=$HOME/.local/bin:$PATH
 
@@ -26,24 +18,39 @@ perl:
   - "5.22"
 
 services:
-- docker
+  - docker
 
 install: true
+
+before_install:
+  - source <(curl https://raw.githubusercontent.com/madworx/cd-ci-glue/add-aws-ecr-functionality/src/cd-ci-glue.bash)
+  - pip install --user awscli
+
 script: true
+
+stages:
+  - build
+  - test
+  - publish
 
 jobs:
   include:
     - stage: build
       script:
-        - echo "Building ${NETBSD_VERSION}"
+        - make build && aws_ecr_push madworx/netbsd:${NETBSD_VERSION}-x86_64 netbsd/build-${TRAVIS_BUILD_NUMBER}
     - stage: test
       script:
-        - echo "Testing ${NETBSD_VERSION}"
+        - DOCKER_IMAGE=$(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) make tests
     - stage: publish
+        - script: is_travis_master_push &&
+                  docker tag $(aws_ecr_get_image_path netbsd/build-${TRAVIS_BUILD_NUMBER}) madworx/netbsd:${NETBSD_VERSION}-x86_64 &&
+                  dockerhub_push_image madworx/netbsd:${NETBSD_VERSION}-x86_64 || true
+    - stage: Update DockerHub description
+      env: NETBSD_VERSION
       script:
-        - echo "Publishing ${NETBSD_VERSION}"
-    - stage: deploy
-      provider: script
-      script:
-        - echo "Deploying ${NETBSD_VERSION}"
+        - is_travis_master_push &&
+          dockerhub_set_description madworx/netbsd README.md || true
 
+after_success:
+  - is_travis_master_push &&
+    dockerhub_push_image madworx/netbsd:${NETBSD_VERSION}-x86_64
