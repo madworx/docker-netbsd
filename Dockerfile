@@ -52,7 +52,7 @@ RUN mkdir /bsd \
                | sha512sum -cw - || exit 1 ; \
            tar zxpf /tmp/${set}.tgz || exit 1 ; \
            rm /tmp/${set}.tgz ; \
-       done
+       done && rm /tmp/SHA512
 
 RUN ssh-keygen -f /root/.ssh/id_rsa -N ''
 

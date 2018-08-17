@@ -1,3 +1,5 @@
+# -*- mode: sh -*-
+
 @test "Start container" {
       docker run --rm --name bats-netbsd -d ${DOCKER_IMAGE}
 }

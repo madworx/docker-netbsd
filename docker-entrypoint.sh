@@ -12,7 +12,7 @@ EXPORT_VARS="SSH_PUBKEY SSH_PORT NETBSD_ARCH NETBSD_VERSION PKG_PATH USER_ID USE
 #
 echo '### THIS FILE IS AUTO-GENERATED UPON BOOT. DO NOT EDIT! ###' > /bsd/etc/startup.vars
 for var in ${EXPORT_VARS} ; do
-    echo "${var}=${!var}" >> /bsd/etc/startup.vars
+    echo "${var}='${!var}'" >> /bsd/etc/startup.vars
     echo "export ${var}" >> /bsd/etc/startup.vars
 done
 
