@@ -11,11 +11,10 @@ verify() {
     verify 512
 }
 
+@test "Test 384M RAM" {
+    verify 384
+}
+
 @test "Test 256M RAM" {
     verify 256
 }
-
-@test "Test 384M RAM" {
-    verify 256
-}
-
