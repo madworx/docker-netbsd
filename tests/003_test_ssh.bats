@@ -22,13 +22,15 @@
 
 @test "Test ssh using public-key works" {
     run ssh                                         \
+        -p 2222                                     \
         -i temp.key                                 \
         -o UserKnownHostsFile=netbsd_ssh_host_keys  \
         -o StrictHostKeyChecking=yes                \
         -o ChallengeResponseAuthentication=no       \
         -o PasswordAuthentication=false             \
         -o KbdInteractiveAuthentication=no          \
-        ssh://root@localhost:2222 uptime
+        root@localhost                              \
+        uptime
     echo $output
     [ $status -eq 0 ]
 }
