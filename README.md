@@ -11,7 +11,7 @@ Available at Docker hub as [madworx/netbsd](https://hub.docker.com/r/madworx/net
 
 ## Usage
 
-### Run a specific command in MINIX
+### Run a specific command in NetBSD
 ```
 $ docker run --rm -it madworx/netbsd:8.0-x86_64 uname -a
 NetBSD netbsd 8.0 NetBSD 8.0 (GENERIC) #0: Tue Jul 17 14:59:51 UTC 2018  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64
