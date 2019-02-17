@@ -36,27 +36,23 @@ There are more options for customizing user accounts, mapping your host OS home 
 
 ### Why is it slow?
 
-If you feel that the container is slow in starting/responding, or you are getting the message "Warning: Lacking KVM support - slower(!) emulation will be used." upon startup, it means that you are either not running the container in privileged mode (`--privileged`` when invoking `docker run`), or your operating system doesn't support KVM.
+If you feel that the container is slow in starting/responding, or you are getting the message "Warning: Lacking KVM support - slower(!) emulation will be used." upon startup, it means that you are either not running the container in privileged mode (`--privileged` when invoking `docker run`), or your operating system doesn't support KVM.
 
 Not having support for KVM might be due to that you are running your Docker engine inside a virtual machine, or that your host doesn't have the adequate support for it.
 
-For instance, when running a QEMU virtual machine under physical hardware, it is entirely possible to run this image with QEMU support. (Which is the setup for the main development environment for this image).
+For instance, when running a QEMU virtual machine under physical hardware, it is entirely possible to run this image with KVM support. (Which is the setup for the main development environment for this image).
 
-### What's up with the "-x86_64" suffix to the docker tag?
+### What's up with the "`-x86_64`" suffix to the docker tag?
 
-Since we are using QEMU to emulate a target system, the "-x86_64" suffix serves to indicate which target system we are emulating.
+Since we are using QEMU to emulate a target system, the "`-x86_64`" suffix serves to indicate which target system we are emulating.
 
-For an z86_64 host, with KVM support, this is the most efficient (and preferred) way to run the container.
+For a `x86_64` host, with KVM support, this is the most efficient (and preferred) way to run the container.
 
-When not running with KVM support, other architectures supported by QEMU might be more efficient, but this is not something that has been tried out yet. (Please - try it out and submit a PR for that functionality)
+When running without KVM support, other target architectures supported by QEMU may be more efficient, but this is not something that has been tried out yet. (Feel free to try it out and submit a PR!)
 
 ## Source
 
 Source code is hosted on [GitHub](https://github.com/madworx/docker-netbsd).
-
-
-
-
 
 
 ## Contributions
