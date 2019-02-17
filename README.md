@@ -31,6 +31,17 @@ netbsd#
 ```
 There are more options for customizing user accounts, mapping your host OS home directory into the NetBSD system etc. Check the `docker-entrypoint.sh` for details, or even better, document it and do a PR towards this project. :-)
 
+
+## FAQ
+
+### Why is it slow?
+
+If you feel that the container is slow in starting/responding, or you are getting the message "Warning: Lacking KVM support - slower(!) emulation will be used." upon startup, it means that you are either not running the container in privileged mode (`--privileged`` when invoking `docker run`), or your operating system doesn't support KVM.
+
+Not having support for KVM might be due to that you are running your Docker engine inside a virtual machine, or that your host doesn't have the adequate support for it.
+
+For instance, when running a QEMU virtual machine under physical hardware, it is entirely possible to run this image with QEMU support. (Which is the setup for the main development environment for this image).
+
 ## Source
 
 Source code is hosted on [GitHub](https://github.com/madworx/docker-netbsd).
