@@ -23,7 +23,7 @@ services:
 install: true
 
 before_install:
-  - source <(curl https://raw.githubusercontent.com/madworx/cd-ci-glue/add-aws-ecr-functionality/src/cd-ci-glue.bash)
+  - source <(curl https://raw.githubusercontent.com/madworx/cd-ci-glue/master/src/cd-ci-glue.bash)
   - pip install --user awscli
 
 script:
