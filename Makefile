@@ -9,6 +9,8 @@ NETBSD_SETS := "base etc man misc modules text kern-GENERIC"
 
 all:	build
 
+test:	tests
+
 tests:
 	DOCKER_IMAGE="madworx/netbsd:$(NETBSD_VERSION)-x86_64" bats tests/*.bats
 
@@ -48,4 +50,4 @@ check:
 		ssh localhost -p $${port} uname -a ; \
 	done
 
-.PHONY: tests
+.PHONY: tests test
