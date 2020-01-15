@@ -29,9 +29,10 @@ RUN apk add --no-cache curl unfs3
 #
 RUN cd /tmp \
     && echo -n "Downloading sets from [${NETBSD_MIRROR}]:" \
+    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -gt "8" ]] && echo tar.xz || echo tgz) \
     && for set in ${NETBSD_SETS} ; do \
         echo -n " ${set}" ; \
-        urls="${urls} -O ${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.tgz" ; \
+        urls="${urls} -fLO ${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.${ext}" ; \
        done \
     && echo "." \
     && curl --fail-early --retry-connrefused --retry 20 ${urls}
@@ -40,18 +41,20 @@ RUN cd /tmp \
 # Download checksum file:
 #
 RUN cd /tmp \
-    && curl --retry-connrefused --retry 20 -O "${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/SHA512"
+    && curl --fail-early --retry-connrefused --retry 20 -fLO "${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/SHA512"
 
 #
 # Verify checksum, unpack (and remove) sets:
 #
 RUN mkdir /bsd \
     && cd /bsd \
+    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -gt "8" ]] && echo tar.xz || echo tgz) \
+    && tarop=$([[ "${NETBSD_VERSION/[^0-9]*/}" -gt "8" ]] && echo J || echo z) \
     && for set in ${NETBSD_SETS} ; do \
-           sed -n -e "s#^SHA512 (${set}.tgz) = \\(.*\\)#\\1  /tmp/${set}.tgz#p" /tmp/SHA512 \
+           sed -n -e "s#^SHA512 (${set}.${ext}) = \\(.*\\)#\\1  /tmp/${set}.${ext}#p" /tmp/SHA512 \
                | sha512sum -cw - || exit 1 ; \
-           tar zxpf /tmp/${set}.tgz || exit 1 ; \
-           rm /tmp/${set}.tgz ; \
+           tar ${tarop}xpf /tmp/${set}.${ext} || exit 1 ; \
+           rm /tmp/${set}.${ext} ; \
        done && rm /tmp/SHA512
 
 RUN ssh-keygen -f /root/.ssh/id_rsa -N ''
