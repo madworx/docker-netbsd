@@ -16,7 +16,6 @@ tests:
 
 build:
 	docker build --no-cache --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
-	  $$([[ "$${NETBSD_VERSION}" < "7" ]] && echo "--build-arg=NETBSD_MIRROR=http://ftp.netbsd.org/pub/NetBSD-archive") \
 	  -t `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
 
 run:
