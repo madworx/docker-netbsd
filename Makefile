@@ -1,4 +1,5 @@
 NETBSD_VERSION := ${NETBSD_VERSION}
+DOCKER_IMAGE := $(shell echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]')
 SHELL := /bin/bash
 
 NETBSD_SETS := "base etc man misc modules text kern-GENERIC"
@@ -12,11 +13,11 @@ all:	build
 test:	tests
 
 tests:
-	DOCKER_IMAGE="madworx/netbsd:$(NETBSD_VERSION)-x86_64" bats tests/*.bats
+	DOCKER_IMAGE=$(DOCKER_IMAGE) bats tests/*.bats
 
 build:
 	docker build --no-cache --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
-	  -t `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'` . || exit 1 ; \
+	  -t $(DOCKER_IMAGE) . || exit 1 ; \
 
 run:
 	echo "Starting NetBSD container(s)..."
@@ -38,7 +39,7 @@ run:
 	done
 
 push:
-	docker push `echo "madworx/netbsd:$(NETBSD_VERSION)-x86_64" | tr '[:upper:]' '[:lower:]'`
+	docker push $(DOCKER_IMAGE)
 
 shell:
 	docker exec -it netbsd-7.1.2 /usr/bin/bsd /bin/sh
