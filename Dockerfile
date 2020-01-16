@@ -22,7 +22,7 @@ ENV NETBSD_ARCH=$NETBSD_ARCH \
 EXPOSE ${SSH_PORT}
 EXPOSE 4444
 
-RUN apk add --no-cache curl unfs3
+RUN apk add --no-cache curl
 
 #
 # Download sets:
