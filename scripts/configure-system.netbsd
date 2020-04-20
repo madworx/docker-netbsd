@@ -14,9 +14,9 @@ trap 'poweroff' 0
 echo "Reading environment variables..."
 . /etc/startup.vars
 
-# Temporary workaround until NetBSD 9 actually has pkgsrc packages:
-if [ "${NETBSD_VERSION}" = "9.0_RC1" ] ; then
-  export PKG_PATH="$(echo "${PKG_PATH}" | sed 's#9.0_RC1#8.1#')"
+# Presumably only needed while 9.0 is the current NetBSD release.
+if [ "${NETBSD_VERSION}" = "9.0" ] ; then
+  export PKG_PATH="$(echo "${PKG_PATH}" | sed 's#9.0#9.0_current#')"
 fi
 
 echo "Dumping all set environment variables:"
