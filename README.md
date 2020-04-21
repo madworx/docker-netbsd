@@ -5,7 +5,7 @@
 Run NetBSD in a docker container (Emulated/virtualized x86_64 using QEMU).
 
 All images have KVM-enabled QEMU, which  will be enabled if the docker
-engine supports it and you are running the container in privileged mode.
+engine supports it and you are running the container with `--device=/dev/kvm`.
 
 Available at Docker hub as [madworx/netbsd](https://hub.docker.com/r/madworx/netbsd/).
 
@@ -21,7 +21,7 @@ $
 ### Start in background, connect via ssh.
 ```
 $ ssh-keygen -t rsa
-$ docker run --rm -d --privileged -e "SSH_PUBKEY=$(cat ~/.ssh/id_rsa.pub)" -p 2222:22 --name netbsd madworx/netbsd:8.0-x86_64
+$ docker run --rm -d --device=/dev/kvm -e "SSH_PUBKEY=$(cat ~/.ssh/id_rsa.pub)" -p 2222:22 --name netbsd madworx/netbsd:8.0-x86_64
 $ ssh -p 2222 root@localhost
 NetBSD ?.? (UNKNOWN)
 
@@ -34,7 +34,7 @@ netbsd#
 or using `ssh-agent`:
 
 ``` shell
-$ docker run --rm -d --privileged -e "SSH_PUBKEY=$(ssh-add -L)" -p 2222:22 --name netbsd madworx/netbsd:8.0-x86_64
+$ docker run --rm -d --device=/dev/kvm -e "SSH_PUBKEY=$(ssh-add -L)" -p 2222:22 --name netbsd madworx/netbsd:8.0-x86_64
 $ ssh -p 2222 root@localhost
 NetBSD ?.? (UNKNOWN)
 
@@ -50,7 +50,7 @@ There are more options for customizing user accounts, mapping your host OS home 
 
 ### Why is it slow?
 
-If you feel that the container is slow in starting/responding, or you are getting the message "Warning: Lacking KVM support - slower(!) emulation will be used." upon startup, it means that you are either not running the container in privileged mode (`--privileged` when invoking `docker run`), or your operating system doesn't support KVM.
+If you feel that the container is slow in starting/responding, or you are getting the message "Warning: Lacking KVM support - slower(!) emulation will be used." upon startup, it means that you are either not exposing KVM to your container (`--device=/dev/kvm` when invoking `docker run`), or your operating system doesn't support KVM.
 
 Not having support for KVM might be due to that you are running your Docker engine inside a virtual machine and that your host doesn't have support for nested virtualization.
 
