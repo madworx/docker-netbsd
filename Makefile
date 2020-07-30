@@ -19,6 +19,12 @@ build:
 	docker build --no-cache --build-arg=NETBSD_VERSION=$(NETBSD_VERSION) \
 	  -t $(DOCKER_IMAGE) . || exit 1 ; \
 
+push:
+	docker push $(DOCKER_IMAGE)
+
+shell:
+	docker exec -it netbsd-7.1.2 /usr/bin/bsd /bin/sh
+
 run:
 	echo "Starting NetBSD container(s)..."
 	port=2221 ; for v in $(VERSIONS) ; do \
@@ -38,16 +44,10 @@ run:
 			madworx/netbsd:$$v-`uname -m` ; \
 	done
 
-push:
-	docker push $(DOCKER_IMAGE)
-
-shell:
-	docker exec -it netbsd-7.1.2 /usr/bin/bsd /bin/sh
-
 check:
 	port=2221 ; for v in $(VERSIONS) ; do \
 		let "port++" ; \
 		ssh localhost -p $${port} uname -a ; \
 	done
 
-.PHONY: tests test
+.PHONY: tests test check run shell push build
