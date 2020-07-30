@@ -4,7 +4,7 @@ env:
     - NETBSD_VERSION=7.1.2
     - NETBSD_VERSION=8.0
     - NETBSD_VERSION=8.1
-    - NETBSD_VERSION=9.0_RC1
+    - NETBSD_VERSION=9.0
   global:
     - PATH=$HOME/.local/bin:$PATH
 

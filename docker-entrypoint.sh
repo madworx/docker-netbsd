@@ -79,10 +79,11 @@ trap "{ echo \"Shutting down gracefully...\" 1>&2 ; \
 (
     export QEMU_CMDLINE="-nographic \
                    -monitor telnet:0.0.0.0:4444,server,nowait \
+                   -serial telnet:localhost:4321,server,nowait \
                    -boot n \
                    ${ENABLE_KVM} \
                    -serial mon:stdio \
-                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::${SSH_PORT}-:22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device e1000,netdev=mynet0 \
+                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::${SSH_PORT}-:22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device virtio,netdev=mynet0 \
                    -m ${SYSTEM_MEMORY} -smp ${SYSTEM_CPUS}"
     case "${QUIET}" in
         0) exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64 ;;
@@ -96,3 +97,4 @@ if [ ! -z "$*" ] ; then
 fi
 
 wait
+
