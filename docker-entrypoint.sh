@@ -78,6 +78,7 @@ trap "{ echo \"Shutting down gracefully...\" 1>&2 ; \
 #
 (
     export QEMU_CMDLINE="-nographic \
+                   -nodefaults \
                    -monitor telnet:0.0.0.0:4444,server,nowait \
                    -serial telnet:localhost:4321,server,nowait \
                    -boot n \
