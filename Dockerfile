@@ -9,8 +9,9 @@ ENV SYSTEM_MEMORY=512M \
     USER_ID="" \
     USER_NAME=""
 
+ARG NETBSD_HEAD_MIRROR=https://nycdn.netbsd.org/pub/NetBSD-daily/HEAD/latest
 ARG NETBSD_MIRROR=http://ftp.fi.netbsd.org/pub/NetBSD
-ARG NETBSD_VERSION=9.0
+ARG NETBSD_VERSION=9.3
 ARG NETBSD_ARCH=amd64
 ARG NETBSD_SETS="base etc man misc modules text kern-GENERIC"
 ARG NETBSD_PKGSRC_PACKAGES="bash"
@@ -28,11 +29,12 @@ RUN apk add --no-cache curl
 # Download sets:
 #
 RUN cd /tmp \
-    && echo -n "Downloading sets from [${NETBSD_MIRROR}]:" \
-    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -gt "8" ]] && echo tar.xz || echo tgz) \
+    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo tgz || echo tar.xz) \
+    && mirror_url=$([[ "${NETBSD_VERSION}" = "head" ]] && echo "${NETBSD_HEAD_MIRROR}" || echo "${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}") \
+    && echo -n "Downloading sets from [${mirror_url}]:" \
     && for set in ${NETBSD_SETS} ; do \
         echo -n " ${set}" ; \
-        urls="${urls} -fLO ${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/${set}.${ext}" ; \
+        urls="${urls} -fLO ${mirror_url}/amd64/binary/sets/${set}.${ext}" ; \
        done \
     && echo "." \
     && curl --fail-early --retry-connrefused --retry 20 ${urls}
@@ -41,15 +43,16 @@ RUN cd /tmp \
 # Download checksum file:
 #
 RUN cd /tmp \
-    && curl --fail-early --retry-connrefused --retry 20 -fLO "${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}/amd64/binary/sets/SHA512"
+    && mirror_url=$([[ "${NETBSD_VERSION}" = "head" ]] && echo "${NETBSD_HEAD_MIRROR}" || echo "${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}") \
+    && curl --fail-early --retry-connrefused --retry 20 -fLO "${mirror_url}/amd64/binary/sets/SHA512"
 
 #
 # Verify checksum, unpack (and remove) sets:
 #
 RUN mkdir /bsd \
     && cd /bsd \
-    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -gt "8" ]] && echo tar.xz || echo tgz) \
-    && tarop=$([[ "${NETBSD_VERSION/[^0-9]*/}" -gt "8" ]] && echo J || echo z) \
+    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo tgz || echo tar.xz) \
+    && tarop=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo z || echo J) \
     && for set in ${NETBSD_SETS} ; do \
            sed -n -e "s#^SHA512 (${set}.${ext}) = \\(.*\\)#\\1  /tmp/${set}.${ext}#p" /tmp/SHA512 \
                | sha512sum -cw - || exit 1 ; \
@@ -74,8 +77,8 @@ COPY bsd.sh /usr/bin/bsd
 RUN /scripts/system-setup.pre.netbsd
 
 #
-# Make one run of /docker-entrypoint.sh, to allow the NetBSD system to
-# configure itself:
+# Make one (1) run of /docker-entrypoint.sh, to allow the NetBSD system
+# to configure itself:
 #
 RUN mv /bsd/etc/rc.conf /bsd/etc/rc.conf.orig \
     && cp /scripts/configure-system.netbsd /bsd/etc/rc.conf \
