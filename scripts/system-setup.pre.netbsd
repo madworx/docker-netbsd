@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script is run inside the qemu (NetBSD) environment.
+
 set -eE
 set -o pipefail
 
@@ -29,3 +31,4 @@ ptyfs              /dev/pts ptyfs   rw          0  0
 EOF
 
 gzip -c netbsd > netbsd.gz
+rm netbsd

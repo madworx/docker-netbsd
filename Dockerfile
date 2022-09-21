@@ -1,11 +1,10 @@
-FROM madworx/qemu:5
+FROM madworx/qemu:latest
 
-MAINTAINER Martin Kjellstrand [https://github.com/madworx]
+LABEL maintainer="Martin Kjellstrand [https://github.com/madworx]"
 
 ENV SYSTEM_MEMORY=512M \
     SYSTEM_CPUS=1 \
     SSH_PUBKEY="" \
-    SSH_PORT=22 \
     USER_ID="" \
     USER_NAME=""
 
@@ -16,11 +15,11 @@ ARG NETBSD_ARCH=amd64
 ARG NETBSD_SETS="base etc man misc modules text kern-GENERIC"
 ARG NETBSD_PKGSRC_PACKAGES="bash"
 
-ENV NETBSD_ARCH=$NETBSD_ARCH \
-    NETBSD_VERSION=$NETBSD_VERSION \
-    PKG_PATH=http://ftp.netbsd.org/pub/pkgsrc/packages/NetBSD/${NETBSD_ARCH}/${NETBSD_VERSION}/All/
+ENV NETBSD_ARCH=$NETBSD_ARCH
+ENV NETBSD_VERSION=$NETBSD_VERSION
+ENV PKG_PATH=http://ftp.netbsd.org/pub/pkgsrc/packages/NetBSD/${NETBSD_ARCH}/${NETBSD_VERSION}/All/
 
-EXPOSE ${SSH_PORT}
+EXPOSE 22
 EXPOSE 4444
 
 RUN apk add --no-cache curl

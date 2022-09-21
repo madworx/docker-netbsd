@@ -11,17 +11,76 @@ Available at Docker hub as [madworx/netbsd](https://hub.docker.com/r/madworx/net
 
 ## Usage
 
-### Run a specific command in NetBSD
+### Available environment variables
+
+#### `USER_ID`, `USER_NAME`
+
+If these environment variables are set, the container will create a user with the provided uid and username. 
+(The specified user will be added to the `wheel` group.)
+
+This is useful if you're mounting your home directory into the container; Provided that you have your public SSH key in `~/.ssh/authorized_keys`, the following example will work:
+
 ```
-$ docker run --rm -it madworx/netbsd:8.0-x86_64 uname -a
-NetBSD netbsd 8.0 NetBSD 8.0 (GENERIC) #0: Tue Jul 17 14:59:51 UTC 2018  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64
-$ 
+$ pwd
+/home/mad
+$ echo "Hello, World." > foobar.txt
+$ docker run \
+    -d --rm --device=/dev/kvm --name netbsd \
+    -e USER_ID=$(id -u) \
+    -e USER_NAME=$(id -un) \
+    -v ~:/bsd/home/$(id -un) \
+    -p 2222:22 \
+    madworx/netbsd
+
+$ ssh -p 2222 localhost 
+NetBSD 9.3 (GENERIC) #0: Thu Aug  4 15:30:37 UTC 2022
+
+Welcome to NetBSD!
+
+-bash-5.1$ id
+uid=1000(mad) gid=100(users) groups=100(users),0(wheel)
+-bash-5.1$ pwd
+/home/mad
+-bash-5.1$ cat foobar.txt
+Hello, World.
 ```
 
-### Start in background, connect via ssh.
+#### `NETDEV`
+
+QEMU Device driver to use for network card. Defaults to `e1000`.
+
+To use `virtio` (only works with HEAD NetBSD > 2022-09-30), use `virtio-pci-net`.
+
+### Run a specific command in NetBSD
+
+```
+$ docker run --rm -it madworx/netbsd uname -a
+NetBSD netbsd 8.0 NetBSD 8.0 (GENERIC) #0: Tue Jul 17 14:59:51 UTC 2018  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64
+```
+
+### Running extra commands after NetBSD boot
+
+To run additional commands (such as downloading further software, issue build pipelines etc), create a file on your docker engine host operating system and mount it as /etc/rc.extra.
+
+The contents of that file will be executed as a shell-script after NetBSD has booted.
+
+```
+$ echo "hostname count_zero" > ./rc.extra
+$ docker run -v $(pwd)/rc.extra:/etc/rc.extra --device=/dev/kvm --rm -it madworx/netbsd:head uname -a
+NetBSD count_zero 9.99.100 NetBSD 9.99.100 (GENERIC) #0: Wed Sep 21 01:33:53 UTC 2022  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64
+```
+
+You can of course do a mount over `/bsd/etc/rc.local`, but then the `USER_ID` and `USER_NAME` auto-creation of users will need to be handled by your own script:
+
+```
+$ docker run -v $(pwd)/rc.local:/bsd/etc/rc.local --device=/dev/kvm --rm -it madworx/netbsd:head uname -a
+NetBSD count_zero 9.99.100 NetBSD 9.99.100 (GENERIC) #0: Wed Sep 21 01:33:53 UTC 2022  mkrepro@mkrepro.NetBSD.org:/usr/src/sys/arch/amd64/compile/GENERIC amd64
+```
+
+### Start in background, connect as root via ssh from host OS.
 ```
 $ ssh-keygen -t rsa
-$ docker run --rm -d --device=/dev/kvm -e "SSH_PUBKEY=$(cat ~/.ssh/id_rsa.pub)" -p 2222:22 --name netbsd madworx/netbsd:8.0-x86_64
+$ docker run --rm -d --device=/dev/kvm -e "SSH_PUBKEY=$(cat ~/.ssh/id_rsa.pub)" -p 2222:22 --name netbsd madworx/netbsd:9
 $ ssh -p 2222 root@localhost
 NetBSD ?.? (UNKNOWN)
 
@@ -31,10 +90,10 @@ We recommend that you create a non-root account and use su(1) for root access.
 netbsd# 
 ```
 
-or using `ssh-agent`:
+... using `ssh-agent`:
 
 ``` shell
-$ docker run --rm -d --device=/dev/kvm -e "SSH_PUBKEY=$(ssh-add -L)" -p 2222:22 --name netbsd madworx/netbsd:8.0-x86_64
+$ docker run --rm -d --device=/dev/kvm -e "SSH_PUBKEY=$(ssh-add -L)" -p 2222:22 --name netbsd madworx/netbsd:9
 $ ssh -p 2222 root@localhost
 NetBSD ?.? (UNKNOWN)
 
@@ -44,9 +103,61 @@ We recommend that you create a non-root account and use su(1) for root access.
 netbsd# 
 ```
 
-There are more options for customizing user accounts, mapping your host OS home directory into the NetBSD system etc. Check the `docker-entrypoint.sh` for details, or even better, document it and do a PR towards this project. :-)
+***There are more options for customizing user accounts, mapping your host OS home directory into the NetBSD system etc:*** Check the `docker-entrypoint.sh` for details, or even better, document it and do a PR towards this project. :-)
 
 ## FAQ
+
+## Where is the console/boot output?
+
+Initially, I designed this container so that it would print out the serial port / console log onto stdout.
+
+This turned out to be non-preferable for a few reasons:
+
+* It tended to give you the expectation that you could interact with the system after boot (i.e. start typing "root" at the login prompt), leading in turn to the feeling that the container wasn't working properly.
+
+* Tying the serial console to stdin/stdout of the container could make sense in a use case where stdin/stdout from the container is being controller by e.g. _expect_, but I believe that the more common use-case would be to either run a single command (`docker run madworx/netbsd uname -a`), or use it in a daemonized fashion (`docker run -d madworx/netbsd`), e.g. for ssh:ing into.
+
+Above might be revisited in the future if there's interest.
+
+### I'm trying to invoke (`docker run ... command`) a less-than-trivial chain of commands and it doesn't work.
+
+This is most likely due to the fact that this container uses `ssh` internally for the communication between the NetBSD operating system and the Linux environment running inside the docker container, combined with how `ssh` handles commands & arguments, which is rather counter-intuitive.
+
+I believe the following example illustrates the point:
+
+```
+$ ssh localhost 'cd /tmp && pwd'
+/tmp
+
+$ ssh localhost sh -c 'cd /tmp && pwd'
+/home/mad
+```
+
+One work-around is to mount volumes into docker, e.g:
+
+```
+$ cat > code/run_my_commands.sh <<EOT
+#!/bin/ksh
+
+set -e
+cd /work
+curl -O 'https://my.download.site/deployment.tar.gz'
+tar zxf deployment.tar.gz
+
+#
+# Any output that below script writes to stdout/stderr
+# will be visible in the docker container logs, as well
+# as the exit code of this script.
+#
+./my_pipeline_script.sh
+EOT
+$ chmod +x code/run_my_commands.sh
+$ docker run \
+    --device=kvm --rm -it \
+    -v $(pwd)/code:/bsd/work
+    madworx/netbsd:head \
+        /work/run_my_commands.sh
+```
 
 ### Why is it slow?
 
@@ -56,18 +167,17 @@ Not having support for KVM might be due to that you are running your Docker engi
 
 For instance, when running a QEMU virtual machine under physical hardware, it is entirely possible to run this image with KVM support. (Which is the setup for the main development environment for this image).
 
-### What's up with the "`-x86_64`" suffix to the docker tag?
+### Why does building take a long time?
 
-Since we are using QEMU to emulate a target system, the "`-x86_64`" suffix serves to indicate which target system we are emulating.
+Docker engine doesn't support building with `--device=/dev/kvm` or privileged mode. (See above)
 
-On a `x86_64` host, with KVM support, this is the most efficient (and preferred) way to run this image.
+### I'd like to emulate other architectures than amd64/x86_64
 
-When running without KVM support, other target architectures supported by QEMU may be more efficient, but this is not something that has been tried out yet. (Feel free to try it out and submit a PR!)
+When running without KVM support, other target architectures supported by QEMU may be more efficient, but this is not something that has been tried out yet. (Feel free to try it out and submit a PR - n.b. the `madworx/qemu` image currently only targets x86_64 so you'll need to rebuild it as well)
 
 ## Source
 
 Source code is hosted on [GitHub](https://github.com/madworx/docker-netbsd).
-
 
 ## Contributions
 
@@ -75,4 +185,4 @@ Any and all contributions are welcome in form of pull requests.
 
 ## Author
 
-Martin Kjellstrand [martin.kjellstrand@madworx.se]
+Martin Kjellstrand [provider+github@madworx.tech]

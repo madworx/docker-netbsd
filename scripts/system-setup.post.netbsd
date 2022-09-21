@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script is run inside the docker container (Linux).
+
 set -eE
 set -o pipefail
 
@@ -20,15 +22,19 @@ sed 's#^#localhost,127.0.0.1 #' /bsd/etc/ssh/ssh*.pub > /root/.ssh/known_hosts
 cd /bsd
 
 echo 'PermitRootLogin yes' >> etc/ssh/sshd_config
-echo '/usr/sbin/sshd' >> etc/rc.local
 cat >> etc/rc.local <<EOF
 . /etc/startup.vars
+
 if [ "\${USER_ID}" ] ; then
   /usr/sbin/useradd -d "/home/\${USER_NAME}" \
                     -u "\${USER_ID}" \
                     -G wheel \
                     -s /usr/pkg/bin/bash \
                     "\${USER_NAME}"
+fi
+
+if [ -f /etc/rc.extra ] ; then
+  . /etc/rc.extra
 fi
 EOF
 
@@ -39,6 +45,7 @@ hostname=netbsd
 nfs_client=YES
 auto_ifconfig=NO
 net_interfaces=""
+sshd=YES
 EOF
 
 echo "Setting power button action..."

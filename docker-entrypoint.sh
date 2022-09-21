@@ -5,7 +5,7 @@
 # system  (by  way of  /bsd/etc/startup.vars,  which  is invoked  from
 # /etc/rc.local).
 #
-EXPORT_VARS="SSH_PUBKEY SSH_PORT NETBSD_ARCH NETBSD_VERSION PKG_PATH USER_ID USER_NAME NETBSD_PKGSRC_PACKAGES"
+EXPORT_VARS="SSH_PUBKEY NETBSD_ARCH NETBSD_VERSION PKG_PATH USER_ID USER_NAME NETBSD_PKGSRC_PACKAGES"
 
 #
 # Generate /etc/startup.vars file before booting into NetBSD:
@@ -15,6 +15,9 @@ for var in ${EXPORT_VARS} ; do
     echo "${var}='${!var}'" >> /bsd/etc/startup.vars
     echo "export ${var}" >> /bsd/etc/startup.vars
 done
+
+# If the user has specified an rc.extra file, include it:
+[ -f "/etc/rc.extra" ] && cp /etc/rc.extra /bsd/etc/rc.extra
 
 #
 # Fix NetBSD /etc/resolv.conf:
@@ -73,6 +76,8 @@ trap "{ echo \"Shutting down gracefully...\" 1>&2 ; \
         echo \"Will now exit entrypoint.\" 1>&2 ; \
         exit 0 ; }" TERM
 
+NETDEV="${NETDEV:-e1000}"
+
 #
 # Boot up NetBSD by starting QEMU.
 #
@@ -81,15 +86,13 @@ trap "{ echo \"Shutting down gracefully...\" 1>&2 ; \
                    -nodefaults \
                    -monitor telnet:0.0.0.0:4444,server,nowait \
                    -serial telnet:localhost:4321,server,nowait \
+                   -serial mon:stdio \
                    -boot n \
                    ${ENABLE_KVM} \
-                   -serial mon:stdio \
-                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::${SSH_PORT}-:22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device e1000,netdev=mynet0 \
+                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device ${NETDEV},netdev=mynet0 \
+                   -netdev user,id=mynet1 -device ${NETDEV},netdev=mynet1 \
                    -m ${SYSTEM_MEMORY} -smp ${SYSTEM_CPUS}"
-    case "${QUIET}" in
-        0) exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64 ;;
-        *) exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64 >/dev/null 2>&1 ;;
-    esac
+    exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64
 ) &
 
 if [ ! -z "$*" ] ; then
@@ -98,4 +101,3 @@ if [ ! -z "$*" ] ; then
 fi
 
 wait
-

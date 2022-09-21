@@ -1,5 +1,8 @@
 #!/bin/ksh
 
+# This script is run inside the qemu (NetBSD) environment upon building
+# the image.
+
 set -x
 set -e
 
