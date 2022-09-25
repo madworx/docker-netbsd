@@ -18,12 +18,21 @@ build-all: ## Build docker images of all available versions of NetBSD
 			NETBSD_MIRROR="$(NETBSD_MIRROR)" \
 			NETBSD_VERSION="$${NETBSD_VERSION}" ; \
 		for TAG in $${TAGS[@]:1} ; do \
-			docker tag $${DOCKER_IMAGE} "madworx/netbsd:$${TAG}" ; \
+			docker tag "$${DOCKER_IMAGE}" "madworx/netbsd:$${TAG}" ; \
 		done \
 	done
 
-#		make test \
-#			NETBSD_VERSION="$${NETBSD_VERSION}" ; \
+push-all: build-all ## Push all available versions built to docker hub
+	ALL_VERSIONS="$(shell make list-available-versions)" ; \
+	for NETBSD_VERSION in $${ALL_VERSIONS} ; do \
+		set -e ; \
+		echo "Pushing $${NETBSD_VERSION}" ; \
+		export TAGS=($$(./generate-tags.py $${NETBSD_VERSION} $${ALL_VERSIONS})) ; \
+		export DOCKER_IMAGE="madworx/netbsd:$${TAGS[0]}" ; \
+		for TAG in $${TAGS[@]} ; do \
+			docker push "madworx/netbsd:$${TAG}" ; \
+		done \
+	done
 
 test: .prereq-vars ## Test a specific version of NETBSD_VERSION.
 	DOCKER_IMAGE=$(DOCKER_IMAGE) bats tests/*.bats
