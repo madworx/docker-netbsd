@@ -26,6 +26,8 @@ RUN apk add --no-cache curl
 
 #
 # Download sets: Before NetBSD 9 sets were packaged using gzip; later on it's xz.
+# Download checksum file.
+# Verify checksum, unpack (and remove) sets.
 #
 RUN cd /tmp \
     && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo tgz || echo tar.xz) \
@@ -36,21 +38,14 @@ RUN cd /tmp \
         urls="${urls} -fLO ${mirror_url}/amd64/binary/sets/${set}.${ext}" ; \
        done \
     && echo "." \
-    && curl --fail-early --retry-connrefused --retry 20 ${urls}
-
-#
-# Download checksum file:
-#
-RUN cd /tmp \
+    && curl --fail-early --retry-connrefused --retry 20 ${urls} \
+    && cd /tmp \
     && mirror_url=$([[ "${NETBSD_VERSION}" = "head" ]] && echo "${NETBSD_HEAD_MIRROR}" || echo "${NETBSD_MIRROR}/NetBSD-${NETBSD_VERSION}") \
-    && curl --fail-early --retry-connrefused --retry 20 -fLO "${mirror_url}/amd64/binary/sets/SHA512"
-
-#
-# Verify checksum, unpack (and remove) sets:
-#
-RUN mkdir /bsd \
+    && echo "Downloading checksum file." \
+    && curl --fail-early --retry-connrefused --retry 20 -fLO "${mirror_url}/amd64/binary/sets/SHA512" \
+    && mkdir /bsd \
     && cd /bsd \
-    && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo tgz || echo tar.xz) \
+    && echo "Validating checksums and unpacking sets." \
     && tarop=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo z || echo J) \
     && for set in ${NETBSD_SETS} ; do \
            sed -n -e "s#^SHA512 (${set}.${ext}) = \\(.*\\)#\\1  /tmp/${set}.${ext}#p" /tmp/SHA512 \
