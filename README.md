@@ -60,7 +60,7 @@ If these environment variables are set, the container will create a user with th
 
 This is useful if you're mounting your home directory into the container; Provided that you have your public SSH key in `~/.ssh/authorized_keys`, the following example will work:
 
-```
+```shell
 $ pwd
 /home/mad
 $ echo "Hello, World." > foobar.txt
@@ -160,17 +160,26 @@ For single command executions (e.g. `docker run madworx/netbsd ps`), the exit st
 
 ## FAQ
 
-## Where is the console/boot output?
+### Where is the console/boot output?
 
-Initially, I designed this container so that it would print out the serial port / console log onto stdout.
+Depending on how the container is invoked you will get different behaviors with regards to console input/output, described below:
+#### Attached mode
 
-This turned out to be non-preferable for a few reasons:
+If you run the container in attached mode (`docker run -it madworx/netbsd`), you will get an "interactive" system where you can communicate with the NetBSD serial port. This enables you to read the kernel messages when booting, and logging in at the login prompt.
 
-* It tended to give you the expectation that you could interact with the system after boot (i.e. start typing "root" at the login prompt), leading in turn to the feeling that the container wasn't working properly.
+N.B: Pressing `[Ctrl]-[C]` will of course kill the container, so it's not a mode meant to be used on a regular basis, however, for just "kicking the tires" on this image, or if you're doing NetBSD kernel development it can be quite useful.
 
-* Tying the serial console to stdin/stdout of the container could make sense in a use case where stdin/stdout from the container is being controller by e.g. _expect_, but I believe that the more common use-case would be to either run a single command (`docker run madworx/netbsd uname -a`), or use it in a daemonized fashion (`docker run -d madworx/netbsd`), e.g. for ssh:ing into.
+#### Invocation with a provided command to be run
 
-Above might be revisited in the future if there's interest.
+If you run the container with a command to be executed (`docker run madworx/netbsd uname -a`), it doesn't matter if you request a tty or not, serial port output will be suppressed, and the only output from the container invocation will be the output of the command requested.
+
+#### Detached mode
+
+Running the container in detached mode (`docker run --name netbsd -d madworx/netbsd`) will make all output from the kernel (serial port) go to the docker logs.
+
+This mode is typically used if you're going to be using the continer for multiple tasks/daily usage etc. The docker container logs (`docker logs netbsd`) can help you diagnose issues that are printed by the kernel, but does not allow you to enter text into the serial port.
+
+Another distinction is that this mode, when the container is stopped, will shut down NetBSD properly by pressing the "virtual poweroff" button. See `docker-entrypoint.sh` for details.
 
 ### I'm trying to invoke (`docker run ... command`) a less-than-trivial chain of commands and it doesn't work.
 
@@ -224,7 +233,7 @@ For instance, when running a QEMU virtual machine under physical hardware, it is
 
 Docker engine doesn't support building with `--device=/dev/kvm` or privileged mode. (See above)
 
-### I'd like to emulate other architectures than amd64/x86_64
+### I'd like to emulate other architectures than `amd64/x86_64`
 
 When running without KVM support, other target architectures supported by QEMU may be more efficient, but this is not something that has been tried out yet. (Feel free to try it out and submit a PR - n.b. the `madworx/qemu` image currently only targets x86_64 so you'll need to rebuild it as well)
 
