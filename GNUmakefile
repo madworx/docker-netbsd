@@ -18,8 +18,6 @@ build-all: ## Build docker images of all available versions of NetBSD
 		make build \
 			NETBSD_MIRROR="$(NETBSD_MIRROR)" \
 			NETBSD_VERSION="$${NETBSD_VERSION}" && \
-		make test \
-			NETBSD_VERSION="$${NETBSD_VERSION}" && \
 		for TAG in $${TAGS[@]:1} ; do \
 			docker tag "$${DOCKER_IMAGE}" "madworx/netbsd:$${TAG}" ; \
 		done \
@@ -52,6 +50,7 @@ build: .prereq-vars ## Build container for given NETBSD_VERSION. (E.g "9.3")
 	  --build-arg=NETBSD_MIRROR="$(NETBSD_MIRROR)" \
 	  --build-arg=NETBSD_VERSION="$(NETBSD_VERSION)" \
 	  -t $(DOCKER_IMAGE) . || exit 1
+	make test NETBSD_VERSION="$${NETBSD_VERSION}"
 	touch $@
 
 push: .prereq-vars ## Push specific NETBSD_VERSION container.
