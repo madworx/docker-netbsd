@@ -55,7 +55,7 @@ fi
 # If we have KVM available, enable it:
 #
 if dd if=/dev/kvm count=0 >/dev/null 2>&1 ; then
-    echo "KVM Hardware acceleration will be used."
+    [ "${QUIET}" -lt 1 ] && echo "KVM Hardware acceleration will be used."
     ENABLE_KVM="-enable-kvm"
 else
     if [ "${QUIET}" -lt 2 ] ; then
@@ -70,34 +70,55 @@ fi
 # Shut down gracefully by connecting to the QEMU monitor and issue the
 # shutdown command there.
 #
-trap "{ echo \"Shutting down gracefully...\" 1>&2 ; \
-        echo -e \"system_powerdown\\n\\n\" | nc localhost 4444 ; \
-        wait ; \
-        echo \"Will now exit entrypoint.\" 1>&2 ; \
-        exit 0 ; }" TERM
+trap "{ echo -e \"system_powerdown\\n\\n\" | nc localhost 4444 > /dev/null ; \
+        wait ; exit \${EXTCODE} ; }" TERM
 
 NETDEV="${NETDEV:-e1000}"
 
 #
 # Boot up NetBSD by starting QEMU.
 #
-(
-    export QEMU_CMDLINE="-nographic \
-                   -nodefaults \
-                   -monitor telnet:0.0.0.0:4444,server,nowait \
-                   -serial telnet:localhost:4321,server,nowait \
-                   -serial mon:stdio \
-                   -boot n \
-                   ${ENABLE_KVM} \
-                   -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device ${NETDEV},netdev=mynet0 \
-                   -netdev user,id=mynet1 -device ${NETDEV},netdev=mynet1 \
-                   -m ${SYSTEM_MEMORY} -smp ${SYSTEM_CPUS}"
+
+export QEMU_CMDLINE="-nographic \
+                -nodefaults \
+                -monitor telnet:0.0.0.0:4444,server,nowait \
+                -boot n \
+                ${ENABLE_KVM} \
+                -netdev user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::22-:22,tftp=/bsd,bootfile=pxeboot_ia32_com0.bin,rootpath=/bsd -device ${NETDEV},netdev=mynet0 \
+                -m ${SYSTEM_MEMORY} -smp ${SYSTEM_CPUS} \
+                -machine vmport=off"
+
+NO_TTY="$(tty >/dev/null 2>&1 ; echo $?)"
+
+EXTCODE=42
+
+# Fully "interactive" session (I.e. stdin/stdout both attached).
+# Won't do a proper shutdown of NetBSD upon termination.
+if [ "${NO_TTY}" = "0" ] && [ -z "$*" ] ; then
+    QEMU_CMDLINE="${QEMU_CMDLINE} -serial stdio"
     exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64
-) &
+else
+    if [ -z "$*" ] ; then
+        # Starting in "detached" mode without terminal.
+        # NetBSD serial output will be printed to docker log.
+        # Will be shut down properly upon container termination.
+        # (Virtual power button will be pressed - see
+        #  /etc/powerd/scripts/power_button)
+        QEMU_CMDLINE="${QEMU_CMDLINE} -serial stdio"
+        (exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64) &
+    else
+        # Regardless if we're attached to a tty or not: Execute
+        # a command without serial output. Will shut down NetBSD
+        # properly upon completion. (see above)
+        QEMU_CMDLINE="${QEMU_CMDLINE} -serial telnet:localhost:4321,server,nowait -serial mon:stdio"
+        (exec -a "NetBSD ${NETBSD_VERSION} [QEMU${ENABLE_KVM}]" qemu-system-x86_64) &
+    fi
 
-if [ ! -z "$*" ] ; then
-    /usr/bin/bsd $*
-    exit $?
+    if [ ! -z "$*" ] ; then
+        /usr/bin/bsd $*
+        EXTCODE=$?
+        kill -TERM $$
+    fi
+    wait
+    EXTCODE=$?
 fi
-
-wait

@@ -9,10 +9,12 @@
 }
 
 @test "Start container" {
-    docker run -p 2222:22 --rm -e SSH_PUBKEY="$(cat temp.key.pub)" --name bats-netbsd -d ${DOCKER_IMAGE}
+    docker stop -t 0 bats-netbsd || true
+    docker rm bats-netbsd || true
+    docker run --device=/dev/kvm -p 2222:22 --rm -e SSH_PUBKEY="$(cat temp.key.pub)" --name bats-netbsd -d ${DOCKER_IMAGE}
 }
 
-@test "Import NetBSD generated ssh host keys" {
+@test "Fetch NetBSD generated ssh host keys" {
     docker exec -it bats-netbsd /bin/bash -c 'cat /bsd/etc/ssh/ssh_host_*_key.pub' | sed 's#^#localhost,127.0.0.1 #' > netbsd_ssh_host_keys
 }
 
@@ -24,6 +26,7 @@
     run ssh                                         \
         -p 2222                                     \
         -i temp.key                                 \
+        -o IdentitiesOnly=yes                       \
         -o UserKnownHostsFile=netbsd_ssh_host_keys  \
         -o StrictHostKeyChecking=yes                \
         -o ChallengeResponseAuthentication=no       \

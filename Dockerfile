@@ -25,7 +25,7 @@ EXPOSE 4444
 RUN apk add --no-cache curl
 
 #
-# Download sets:
+# Download sets: Before NetBSD 9 sets were packaged using gzip; later on it's xz.
 #
 RUN cd /tmp \
     && ext=$([[ "${NETBSD_VERSION/[^0-9]*/}" -lt "9" ]] && echo tgz || echo tar.xz) \

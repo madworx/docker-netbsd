@@ -11,6 +11,46 @@ Available at Docker hub as [madworx/netbsd](https://hub.docker.com/r/madworx/net
 
 ## Usage
 
+### Quickstart
+
+#### Start an "interactive" session on the NetBSD console
+
+(Quite useful if you're just testing the container, or doing kernel development)
+
+```shell
+$ docker --device=/dev/kvm -it madworx/netbsd
+SeaBIOS (version rel-1.16.0-0-gd239552ce722-prebuilt.qemu.org)
+iPXE (http://ipxe.org) 00:02.0 C000 PCI2.10 PnP PMM+1FF91300+1FEF1300 C000
+...
+pxeboot_ia32_com0.bin : 73952 bytes [PXE-NBP
+>> NetBSD/x86 PXE boot, Revision 5.1 (Thu Aug  4 15:30:37 UTC 2022) (from NetBSD 9.3)
+>> Memory: 625/522104 k
+Press return to boot now, any other key for boot menu
+booting netbsd - starting in 0 seconds.
+...
+See /var/run/rc.log for more information.
+Tue Sep 27 14:24:27 UTC 2022
+
+NetBSD/amd64 (netbsd) (constty)
+
+login: root
+Sep 27 14:24:48 netbsd login: ROOT LOGIN (root) on tty constty
+Copyright (c) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+    2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017,
+    2018, 2019, 2020, 2021, 2022
+    The NetBSD Foundation, Inc.  All rights reserved.
+Copyright (c) 1982, 1986, 1989, 1991, 1993
+    The Regents of the University of California.  All rights reserved.
+
+NetBSD 9.99.100 (GENERIC) #39: Tue Sep 27 14:35:15 CEST 2022
+
+Welcome to NetBSD!
+
+We recommend that you create a non-root account and use su(1) for root access.
+netbsd# id
+uid=0(root) gid=0(wheel) groups=0(wheel),2(kmem),3(sys),4(tty),5(operator),20(staff),31(guest),34(nvmm)
+```
+
 ### Available environment variables
 
 #### `USER_ID`, `USER_NAME`
@@ -49,7 +89,7 @@ Hello, World.
 
 QEMU Device driver to use for network card. Defaults to `e1000`.
 
-To use `virtio` (only works with HEAD NetBSD > 2022-09-30), use `virtio-pci-net`.
+To use `virtio` (only works with HEAD NetBSD > 2022-XX-XX), use `virtio-net-pci`.
 
 ### Run a specific command in NetBSD
 
@@ -104,6 +144,19 @@ netbsd#
 ```
 
 ***There are more options for customizing user accounts, mapping your host OS home directory into the NetBSD system etc:*** Check the `docker-entrypoint.sh` for details, or even better, document it and do a PR towards this project. :-)
+
+## Container exit status
+
+For single command executions (e.g. `docker run madworx/netbsd ps`), the exit status of the container will be the exit code of the given command.
+
+### Special cases:
+- `242` -- While attempting to run a specific command (e.g. `docker run madworx/netbsd uname -a`), the qemu process disappeared.
+
+  This indicates an error with the QEMU configuration, such as an invalid value of the `NETDEV` environment variable.
+
+  The QEMU error message should be visible as docker container output.
+
+- `42` -- Internal "default value" which shouldn't really happen. Submit a PR if it does.
 
 ## FAQ
 

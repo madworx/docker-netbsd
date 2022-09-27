@@ -10,6 +10,11 @@ set -o pipefail
 if ! ssh root@localhost -oConnectTimeout=10 /bin/echo ok > /dev/null 2>&1 ; then
     #echo "Checking SSH connectivity..." 1>&2
     while ! ssh root@localhost -oConnectTimeout=3 /bin/echo ok > /dev/null 2>&1 ; do
+        # Guard against the QEMU process disapperaing:
+        pgrep QEMU > /dev/null 2>&1 || (
+            echo "FATAL: While waiting to connect, qemu shut down."
+            exit 242
+        )
         #echo "   Waiting..." 1>&2
         sleep 1
     done
