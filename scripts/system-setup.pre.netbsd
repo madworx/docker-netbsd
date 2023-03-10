@@ -26,7 +26,7 @@ cat > etc/fstab <<EOF
 192.168.76.2:/bsd  /        nfs     rw          0  0
 /kern              /kern    kernfs  rw          0  0
 /proc              /proc    procfs  rw          0  0
-fdesc              /dev/fd  fdescfs rw,-o=union 0  0
+fdesc              /dev/fd  fdesc   rw,-o=union 0  0
 ptyfs              /dev/pts ptyfs   rw          0  0
 EOF
 
