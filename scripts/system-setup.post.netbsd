@@ -29,6 +29,7 @@ if [ "\${USER_ID}" ] ; then
   /usr/sbin/useradd -d "/home/\${USER_NAME}" \
                     -u "\${USER_ID}" \
                     -G wheel \
+                    -k /etc/skel \
                     -s /usr/pkg/bin/bash \
                     "\${USER_NAME}"
 fi
