@@ -18,7 +18,7 @@ Available at Docker hub as [madworx/netbsd](https://hub.docker.com/r/madworx/net
 (Quite useful if you're just testing the container, or doing kernel development)
 
 ```shell
-$ docker --device=/dev/kvm -it madworx/netbsd
+$ docker run --device=/dev/kvm -it madworx/netbsd
 SeaBIOS (version rel-1.16.0-0-gd239552ce722-prebuilt.qemu.org)
 iPXE (http://ipxe.org) 00:02.0 C000 PCI2.10 PnP PMM+1FF91300+1FEF1300 C000
 ...
