@@ -70,7 +70,7 @@ fi
 # Shut down gracefully by connecting to the QEMU monitor and issue the
 # shutdown command there.
 #
-trap "{ echo -e \"system_powerdown\\n\\n\" | nc localhost 4444 > /dev/null ; \
+trap "{ echo -e \"system_powerdown\\n\\n\" | nc 127.0.0.1 4444 > /dev/null ; \
         wait ; exit \${EXTCODE} ; }" TERM
 
 NETDEV="${NETDEV:-e1000}"
